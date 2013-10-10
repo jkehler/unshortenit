@@ -12,7 +12,6 @@ help:
 	@echo "testall - run tests on every Python version with tox"
 	@echo "release - package and upload a release"
 	@echo "sdist - package"
-	@echo "setup - internal used by setup.py install"
 
 build27:
 	virtualenv -p python2.7 env
