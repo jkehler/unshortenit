@@ -36,15 +36,15 @@ Installation
 In order to enable adf.ly support you will need to install the PyV8 library. This will need to be compiled from source.
 
 * Python 2.7 PyV8 Instructions:
-    - sudo apt-get install gyp subversion build-essential libboost-python-dev python2.7-dev libboost-system-dev libboost-thread-dev
-    - svn checkout http://v8.googlecode.com/svn/trunk/ v8
-    - svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8-read-only
-    - cd v8
-    - make dependencies
-    - cd ..
-    - cd pyv8-read-only
-    - V8_HOME=/path/to/v8 python2.7 setup.py build *** This will not work inside a virtualenv. Make sure to deactivate your virtualenv first.
-    - python2.7 setup.py install *** You can run this inside your virtualenv to install it.
+    sudo apt-get install gyp subversion build-essential libboost-python-dev python2.7-dev libboost-system-dev libboost-thread-dev
+    svn checkout http://v8.googlecode.com/svn/trunk/ v8
+    svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8-read-only
+    cd v8
+    make dependencies
+    cd ..
+    cd pyv8-read-only
+    V8_HOME=/path/to/v8 python2.7 setup.py build *** This will not work inside a virtualenv. Make sure to deactivate your virtualenv first.
+    python2.7 setup.py install *** You can run this inside your virtualenv to install it.
 
 * Python 3.3 PyV8 Instructions:
     - sudo apt-get install gyp subversion build-essential libboost-python-dev python3.3-dev libboost-system-dev libboost-thread-dev
