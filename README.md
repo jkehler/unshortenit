@@ -19,8 +19,8 @@ Features
 Usage
 -----
 
-import unshortenit
-unshortened_uri,status = unshortenit.unshorten('http://ul.to')
+<import unshortenit
+unshortened_uri,status = unshortenit.unshorten('http://ul.to')>
 
 > unshortenit.unshorten will return a tuple (unshortened_uri,status)
 
@@ -30,8 +30,8 @@ unshortened_uri,status = unshortenit.unshorten('http://ul.to')
 Installation
 ------------
 
-pip install unshortenit
-pip install requests
+<pip install unshortenit
+pip install requests>
 
 In order to enable adf.ly support you will need to install the PyV8 library. This will need to be compiled from source.
 
