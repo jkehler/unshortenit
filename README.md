@@ -36,7 +36,7 @@ Installation
 In order to enable adf.ly support you will need to install the PyV8 library. This will need to be compiled from source.
 
 * Python 2.7 PyV8 Instructions:
-    sudo apt-get install gyp subversion build-essential libboost-python-dev python2.7-dev libboost-system-dev libboost-thread-dev
+    <sudo apt-get install gyp subversion build-essential libboost-python-dev python2.7-dev libboost-system-dev libboost-thread-dev>
     svn checkout http://v8.googlecode.com/svn/trunk/ v8
     svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8-read-only
     cd v8
