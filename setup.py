@@ -20,27 +20,27 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='unshortenit',
     version='0.1.0',
-    description='Unshortens adf.ly,adfoc.us,lnx.lu,linkbucks, and any 301 redirected shortener urls',
+    description='Unshortens adf.ly, adfoc.us, lnx.lu, linkbucks, and any 301 redirected shortener urls',
     long_description=readme + '\n\n' + history,
     author='Jeff Kehler',
     author_email='jeffrey.kehler@gmail.com',
-    url='https://github.com/none/unshortenit',
+    url='https://github.com/DevKeh/unshortenit',
     packages=[
         'unshortenit',
     ],
     package_dir={'unshortenit': 'unshortenit'},
     include_package_data=True,
-    install_requires=[
+    install_requires=['requests'
     ],
-    license="BSD",
+    license="MIT",
     zip_safe=False,
-    keywords='unshortenit',
+    keywords='unshortener adf.ly linkbucks lnx.lu adfoc.us shortner',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.3 :: 2.7',
     ],
     test_suite='tests',
 )
