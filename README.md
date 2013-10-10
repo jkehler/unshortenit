@@ -31,7 +31,6 @@ Installation
 ------------
 
     pip install unshortenit
-    pip install requests
 
 In order to enable adf.ly support you will need to install the PyV8 library. This will need to be compiled from source.
 
