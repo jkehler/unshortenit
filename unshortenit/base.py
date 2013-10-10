@@ -10,7 +10,9 @@ try:
     from urllib.request import urlsplit
 except:
     from urlparse import urlsplit
-import re, os, requests
+import re
+import os
+import requests
 from io import open
 
 
@@ -21,103 +23,101 @@ class UnshortenIt(object):
     _linkbucks_regex = r'linkbucks\.com|any\.gs|cash4links\.co|cash4files\.co|dyo\.gs|filesonthe\.net|goneviral\.com|megaline\.co|miniurls\.co|qqc\.co|seriousdeals\.net|theseblogs\.com|theseforums\.com|tinylinks\.co|tubeviral\.com|ultrafiles\.net|urlbeat\.net|whackyvidz\.com|yyv\.co'
     _adfocus_regex = r'adfoc\.us'
     _lnxlu_regex = r'lnx\.lu'
-    _this_dir,_this_filename = os.path.split(__file__)
+    _this_dir, _this_filename = os.path.split(__file__)
 
-    def __init__(self,adfly_js_file=None):
+    def __init__(self, adfly_js_file=None):
         if adfly_support:
             self.ctx = PyV8.JSContext()
             self.ctx.enter()
             if adfly_js_file is None:
-                adfly_js_file = os.path.join(self._this_dir,'adfly.js')
+                adfly_js_file = os.path.join(self._this_dir, 'adfly.js')
             if os.path.isfile(adfly_js_file):
                 file = open(adfly_js_file, 'r', encoding="iso-8859-1")
                 self.adfly_js = file.read()
                 file.close()
 
-
-    def unshorten(self,uri):
+    def unshorten(self, uri):
         domain = urlsplit(uri).netloc
 
-        if re.search(self._adfly_regex,domain,re.IGNORECASE):
+        if re.search(self._adfly_regex, domain, re.IGNORECASE):
             if adfly_support:
                 return self._unshorten_adfly(uri)
             else:
-                return uri,'adf.ly not supported. Install PyV8 to add support.'
-        if re.search(self._adfocus_regex,domain,re.IGNORECASE):
+                return uri, 'adf.ly not supported. Install PyV8 to add support.'
+        if re.search(self._adfocus_regex, domain, re.IGNORECASE):
             return self._unshorten_adfocus(uri)
-        if re.search(self._linkbucks_regex,domain,re.IGNORECASE):
+        if re.search(self._linkbucks_regex, domain, re.IGNORECASE):
             return self._unshorten_linkbucks(uri)
-        if re.search(self._lnxlu_regex,domain,re.IGNORECASE):
+        if re.search(self._lnxlu_regex, domain, re.IGNORECASE):
             return self._unshorten_lnxlu(uri)
 
         try:
-            r = requests.get(uri,headers=self._headers)
-            return r.url,r.status_code
+            r = requests.get(uri, headers=self._headers)
+            return r.url, r.status_code
         except Exception as e:
-            return uri,str(e)
+            return uri, str(e)
 
     def _unshorten_adfly(self, uri):
 
         try:
-            r = requests.get(uri,headers=self._headers)
+            r = requests.get(uri, headers=self._headers)
             html = r.text
-            ysmm = re.findall(r"var ysmm =.*\;?",html)
+            ysmm = re.findall(r"var ysmm =.*\;?", html)
 
             if len(ysmm) > 0:
 
                 decoded_uri = self.ctx.eval(ysmm[0] + self.adfly_js)
-                return decoded_uri,r.status_code
+                return decoded_uri, r.status_code
             else:
-                return uri,'No ysmm variable found'
+                return uri, 'No ysmm variable found'
 
         except Exception as e:
-            return uri,str(e)
-
+            return uri, str(e)
 
     def _unshorten_linkbucks(self, uri):
         try:
-            r = requests.get(uri,headers=self._headers)
+            r = requests.get(uri, headers=self._headers)
             html = r.text
             link = re.search("Lbjs.TargetUrl.*\;", html)
 
             if link:
                 uri = re.sub("Lbjs.TargetUrl = '|'\;$", '', link.group(0))
-                return uri,r.status_code
+                return uri, r.status_code
         except Exception as e:
-            return uri,str(e)
+            return uri, str(e)
 
     def _unshorten_adfocus(self, uri):
         try:
             http_header = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4"}
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4"}
 
-            r = requests.get(uri,headers=http_header)
+            r = requests.get(uri, headers=http_header)
             html = r.text
 
             adlink = re.findall("click_url =.*;", html)
 
             if len(adlink) > 1:
                 uri = re.sub('^click_url = "|"\;$', '', adlink[1])
-                return uri,r.status_code
+                return uri, r.status_code
 
         except Exception as e:
-            return uri,str(e)
+            return uri, str(e)
 
     def _unshorten_lnxlu(self, uri):
         try:
-            r = requests.get(uri,headers=self._headers)
+            r = requests.get(uri, headers=self._headers)
             html = r.text
 
             code = re.findall('/\?click\=(.*)\."', html)
 
             if len(code) > 0:
-                payload = {'click':code[0]}
-                r = requests.get('http://lnx.lu/',params=payload,headers=self._headers)
+                payload = {'click': code[0]}
+                r = requests.get('http://lnx.lu/', params=payload, headers=self._headers)
                 return r.url, r.status_code
         except Exception as e:
-            return uri,str(e)
+            return uri, str(e)
 
 
 def unshorten(uri):
