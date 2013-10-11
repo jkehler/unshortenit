@@ -10,6 +10,8 @@ class TestUnshortenIt(TestCase):
                              ('http://www39.zippyshare.com/v/69303767/file.html', 200))
             self.assertEqual(unshortenit.unshorten('http://adf.ly/1icWR'),
                              ('http://adf.ly/1icWR', 'No ysmm variable found'))
+            self.assertEqual(unshortenit.unshorten('http://links.devitrianto.com/yy', type='adfly'),
+                             ('http://www.sendspace.com/file/a2z6ji', 200))
         else:
             self.assertEqual(unshortenit.unshorten('http://adf.ly/WzXu2'),
                              ('http://adf.ly/WzXu2', 'adf.ly not supported. Install PyV8 to add support.'))

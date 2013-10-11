@@ -19,7 +19,7 @@ from io import open
 class UnshortenIt(object):
 
     _headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2'}
-    _adfly_regex = r'adf.ly|q\.gs|j\.gs|u\.bb'
+    _adfly_regex = r'adf\.ly|q\.gs|j\.gs|u\.bb'
     _linkbucks_regex = r'linkbucks\.com|any\.gs|cash4links\.co|cash4files\.co|dyo\.gs|filesonthe\.net|goneviral\.com|megaline\.co|miniurls\.co|qqc\.co|seriousdeals\.net|theseblogs\.com|theseforums\.com|tinylinks\.co|tubeviral\.com|ultrafiles\.net|urlbeat\.net|whackyvidz\.com|yyv\.co'
     _adfocus_regex = r'adfoc\.us'
     _lnxlu_regex = r'lnx\.lu'
@@ -36,10 +36,10 @@ class UnshortenIt(object):
                 self.adfly_js = file.read()
                 file.close()
 
-    def unshorten(self, uri):
+    def unshorten(self, uri, type=None):
         domain = urlsplit(uri).netloc
 
-        if re.search(self._adfly_regex, domain, re.IGNORECASE):
+        if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             if adfly_support:
                 return self._unshorten_adfly(uri)
             else:
@@ -83,6 +83,8 @@ class UnshortenIt(object):
             if link:
                 uri = re.sub("Lbjs.TargetUrl = '|'\;$", '', link.group(0))
                 return uri, r.status_code
+            else:
+                return uri, 'No TargetUrl variable found'
         except Exception as e:
             return uri, str(e)
 
@@ -101,7 +103,8 @@ class UnshortenIt(object):
             if len(adlink) > 1:
                 uri = re.sub('^click_url = "|"\;$', '', adlink[1])
                 return uri, r.status_code
-
+            else:
+                return uri, 'No click_url variable found'
         except Exception as e:
             return uri, str(e)
 
@@ -116,10 +119,12 @@ class UnshortenIt(object):
                 payload = {'click': code[0]}
                 r = requests.get('http://lnx.lu/', params=payload, headers=self._headers)
                 return r.url, r.status_code
+            else:
+                return uri, 'No click variable found'
         except Exception as e:
             return uri, str(e)
 
 
-def unshorten(uri):
+def unshorten(uri, type=None):
     unshortener = UnshortenIt()
-    return unshortener.unshorten(uri)
+    return unshortener.unshorten(uri, type)

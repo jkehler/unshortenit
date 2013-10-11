@@ -10,6 +10,7 @@ Features
 
 - Supports unshortening the following ad-based shortners:
     - Adf.ly and related subdomains (PyV8 library required)
+    - Custom adf.ly domains by passing the type='adfly' parameter
     - Lnx.lu
     - Linkbucks.com and related subdomains
     - Adfoc.us
