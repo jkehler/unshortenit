@@ -28,6 +28,7 @@ class UnshortenIt(object):
     _adfocus_regex = r'adfoc\.us'
     _lnxlu_regex = r'lnx\.lu'
     _this_dir, _this_filename = os.path.split(__file__)
+    _timeout = 10
 
     def __init__(self, adfly_js_file=None):
         if adfly_support:
@@ -40,8 +41,9 @@ class UnshortenIt(object):
                 self.adfly_js = file.read()
                 file.close()
 
-    def unshorten(self, uri, type=None):
+    def unshorten(self, uri, type=None, timeout=10):
         domain = urlsplit(uri).netloc
+        self._timeout = timeout
 
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             if adfly_support:
@@ -58,9 +60,9 @@ class UnshortenIt(object):
         try:
             # headers stop t.co from working so omit headers if this is a t.co link
             if domain == 't.co':
-                r = requests.get(uri)
+                r = requests.get(uri, timeout=self._timeout)
             else:
-                r = requests.get(uri, headers=self._headers)
+                r = requests.get(uri, headers=self._headers, timeout=self._timeout)
             return r.url, r.status_code
         except Exception as e:
             return uri, str(e)
@@ -68,7 +70,7 @@ class UnshortenIt(object):
     def _unshorten_adfly(self, uri):
 
         try:
-            r = requests.get(uri, headers=self._headers)
+            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
             html = r.text
             ysmm = re.findall(r"var ysmm =.*\;?", html)
 
@@ -84,7 +86,7 @@ class UnshortenIt(object):
 
     def _unshorten_linkbucks(self, uri):
         try:
-            r = requests.get(uri, headers=self._headers)
+            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
             html = r.text
             link = re.search("Lbjs.TargetUrl.*\;", html)
 
@@ -103,7 +105,7 @@ class UnshortenIt(object):
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4"}
 
-            r = requests.get(uri, headers=http_header)
+            r = requests.get(uri, headers=http_header, timeout=self._timeout)
             html = r.text
 
             adlink = re.findall("click_url =.*;", html)
@@ -118,14 +120,14 @@ class UnshortenIt(object):
 
     def _unshorten_lnxlu(self, uri):
         try:
-            r = requests.get(uri, headers=self._headers)
+            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
             html = r.text
 
             code = re.findall('/\?click\=(.*)\."', html)
 
             if len(code) > 0:
                 payload = {'click': code[0]}
-                r = requests.get('http://lnx.lu/', params=payload, headers=self._headers)
+                r = requests.get('http://lnx.lu/', params=payload, headers=self._headers, timeout=self._timeout)
                 return r.url, r.status_code
             else:
                 return uri, 'No click variable found'
@@ -133,6 +135,6 @@ class UnshortenIt(object):
             return uri, str(e)
 
 
-def unshorten(uri, type=None):
+def unshorten(uri, type=None, timeout=10):
     unshortener = UnshortenIt()
-    return unshortener.unshorten(uri, type)
+    return unshortener.unshorten(uri, type, timeout)

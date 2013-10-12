@@ -17,3 +17,8 @@ History
 ++++++++++++++++++
 
 * Fixed bug with t.co not working.
+
+0.1.3 (2013-10-12)
+++++++++++++++++++
+
+* Added a timeout parameter
