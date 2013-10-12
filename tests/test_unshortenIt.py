@@ -30,3 +30,7 @@ class TestUnshortenIt(TestCase):
         self.assertEqual(unshortenit.unshorten('http://ul.to'), ('http://uploaded.net/', 200))
         self.assertEqual(unshortenit.unshorten('http://t.co/fsbtLWPUIJ'),
                          ('http://www.igen.fr/app-store/drift-mania-street-outlaws-du-drift-son-paroxysme-108452', 200))
+        self.assertEqual(unshortenit.unshorten('http://p.ost.im/d7DPHP'),
+                         ('http://crazymikesapps.com/drift-mania-street-outlaws-video-review/', 200))
+        self.assertEqual(unshortenit.unshorten('http://bit.ly/GQX7MU'),
+                         ('http://rugame.mobi/android/22854/streetoutlaws_v1_01.rar', 200))

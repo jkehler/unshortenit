@@ -50,20 +50,31 @@ class UnshortenIt(object):
                 return self._unshorten_adfly(uri)
             else:
                 return uri, 'adf.ly not supported. Install PyV8 to add support.'
-        if re.search(self._adfocus_regex, domain, re.IGNORECASE):
+        if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
             return self._unshorten_adfocus(uri)
-        if re.search(self._linkbucks_regex, domain, re.IGNORECASE):
+        if re.search(self._linkbucks_regex, domain, re.IGNORECASE) or type == 'linkbucks':
             return self._unshorten_linkbucks(uri)
-        if re.search(self._lnxlu_regex, domain, re.IGNORECASE):
+        if re.search(self._lnxlu_regex, domain, re.IGNORECASE) or type == 'lnxlu':
             return self._unshorten_lnxlu(uri)
 
         try:
             # headers stop t.co from working so omit headers if this is a t.co link
             if domain == 't.co':
                 r = requests.get(uri, timeout=self._timeout)
-            else:
+                return r.url, r.status_code
+            # p.ost.im uses meta http refresh to redirect.
+            if domain == 'p.ost.im':
                 r = requests.get(uri, headers=self._headers, timeout=self._timeout)
-            return r.url, r.status_code
+                uri = re.findall(r'.*url\=(.*?)\"\.*',r.text)[0]
+                return uri, 200
+            r = requests.head(uri, headers=self._headers, timeout=self._timeout)
+            while True:
+                if 'location' in r.headers:
+                    r = requests.head(r.headers['location'])
+                    uri = r.url
+                else:
+                    return r.url, r.status_code
+
         except Exception as e:
             return uri, str(e)
 
