@@ -28,3 +28,5 @@ class TestUnshortenIt(TestCase):
 
     def test_generic(self):
         self.assertEqual(unshortenit.unshorten('http://ul.to'), ('http://uploaded.net/', 200))
+        self.assertEqual(unshortenit.unshorten('http://t.co/fsbtLWPUIJ'),
+                         ('http://www.igen.fr/app-store/drift-mania-street-outlaws-du-drift-son-paroxysme-108452', 200))

@@ -3,7 +3,7 @@
 
 __author__ = 'Jeff Kehler'
 __email__ = 'jeffrey.kehler@gmail.com'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 from .base import unshorten
 from .base import adfly_support
