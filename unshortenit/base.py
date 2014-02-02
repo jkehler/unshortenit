@@ -7,14 +7,16 @@ try:
 except:
     adfly_support = False
 try:
-    from urllib.request import urlsplit
+    from urllib.request import urlsplit, urlparse
 except:
-    from urlparse import urlsplit
+    from urlparse import urlsplit, urlparse
 import re
 import os
 import requests
 from io import open
-
+import time
+from random import randint
+import json
 
 class UnshortenIt(object):
 
@@ -97,32 +99,84 @@ class UnshortenIt(object):
 
     def _unshorten_linkbucks(self, uri):
         try:
-            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
-            html = r.text
-            link = re.search("Lbjs.TargetUrl.*\;", html)
+            retry_limit = 4
+            retry_count = 0
+            while True:
 
-            if link:
-                uri = re.sub("Lbjs.TargetUrl = '|'\;$", '', link.group(0))
-                return uri, r.status_code
-            else:
-                return uri, 'No TargetUrl variable found'
+                r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+
+                html = r.text
+                o = urlparse(uri)
+                base_url = 'http://' + o.netloc
+                time_val = 59550686 #55058824 #15127928
+                time_val = randint(1420000, 6400000)
+
+
+                headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Encoding': 'gzip,deflate,sdch',
+                            'Accept-Language': 'en-US,en;q=0.8',
+                            'Connection': 'keep-alive',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36',
+                            'Host': o.netloc,
+                            'Referer': base_url + '/'}
+
+                tokens = re.findall(r"params\[\(\'To\' \+ \'Ad\' \+ \'ken\' \+ \'Url\'\)\.replace\(\'Ad\', \'\'\)\.replace\(\'Url\'\, \'\'\)\](.*)\;", html)
+                if len(tokens) == 4:
+                    token = re.sub('\s|\+|\=|\'', '', tokens[2].strip())
+                    token += re.sub('\s|\+|\=|\'', '', tokens[3].strip())
+
+                    r = requests.get(base_url + '/scripts/generated/key.js?t=' + str(token) + '&' + str(time_val), headers=headers, timeout=self._timeout)
+                    time.sleep(5)
+                    r = requests.get(base_url + '/intermission/loadTargetUrl?t=' + str(token), headers=headers, timeout=self._timeout)
+                    response = json.loads(r.text)
+                    if response['Success'] == True:
+                        if 'Url' in response:
+                            url = response['Url']
+                            return url, r.status_code
+
+                if retry_count < retry_limit:
+                    retry_count += 1
+                else:
+                    break
+
+            return uri, 'Failed to extract link.'
+
         except Exception as e:
             return uri, str(e)
 
     def _unshorten_adfocus(self, uri):
+        orig_uri = uri
         try:
             http_header = {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4"}
+                "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache"
+            }
 
             r = requests.get(uri, headers=http_header, timeout=self._timeout)
             html = r.text
 
             adlink = re.findall("click_url =.*;", html)
 
-            if len(adlink) > 1:
-                uri = re.sub('^click_url = "|"\;$', '', adlink[1])
+            if len(adlink) > 0:
+                uri = re.sub('^click_url = "|"\;$', '', adlink[0])
+                if re.search(r'http(s|)\://adfoc\.us/serve/skip/\?id\=', uri):
+                    http_header = {
+                        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+                        "Accept-Encoding": "gzip,deflate,sdch",
+                        "Accept-Language": "en-US,en;,q=0.8",
+                        "Connection": "keep-alive",
+                        "Host": "adfoc.us",
+                        "Cache-Control": "no-cache",
+                        "Pragma": "no-cache",
+                        "Referer": orig_uri,
+                    }
+                    r = requests.get(uri, headers=http_header, timeout=self._timeout)
+                    print(r.headers)
+
+                    uri = r.url
                 return uri, r.status_code
             else:
                 return uri, 'No click_url variable found'

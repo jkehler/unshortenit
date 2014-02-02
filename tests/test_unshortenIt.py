@@ -21,7 +21,7 @@ class TestUnshortenIt(TestCase):
                          ('http://www.filedownloads.org/1rpnb9dudo7o/My_Backup_Pro_v3.2.5zz.zip.html', 200))
 
     def test_adfocus(self):
-        self.assertEqual(unshortenit.unshorten('http://adfoc.us/304385708634'), ('http://naughtywebcams.us', 200))
+        self.assertEqual(unshortenit.unshorten('http://adfoc.us/340347863622'), ('http://www7.zippyshare.com/', 404))
 
     def test_lnxlu(self):
         self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))
@@ -32,5 +32,3 @@ class TestUnshortenIt(TestCase):
                          ('http://www.igen.fr/app-store/drift-mania-street-outlaws-du-drift-son-paroxysme-108452', 200))
         self.assertEqual(unshortenit.unshorten('http://p.ost.im/d7DPHP'),
                          ('http://crazymikesapps.com/drift-mania-street-outlaws-video-review/', 200))
-        self.assertEqual(unshortenit.unshorten('http://bit.ly/GQX7MU'),
-                         ('http://rugame.mobi/android/22854/streetoutlaws_v1_01.rar', 200))
