@@ -29,7 +29,7 @@ History
 * Added support for p.ost.im.
 * Fixed blocking issue with direct links to file downloads
 
-0.1.5 (2014-02-01)
+0.1.6 (2014-02-01)
 ++++++++++++++++++
 
 * Fixed adfoc.us issues resulting from changes to their site
