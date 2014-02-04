@@ -108,7 +108,6 @@ class UnshortenIt(object):
                 html = r.text
                 o = urlparse(uri)
                 base_url = 'http://' + o.netloc
-                time_val = 59550686 #55058824 #15127928
                 time_val = randint(1420000, 6400000)
 
 
@@ -120,14 +119,25 @@ class UnshortenIt(object):
                             'Host': o.netloc,
                             'Referer': base_url + '/'}
 
-                tokens = re.findall(r"params\[\(\'To\' \+ \'Ad\' \+ \'ken\' \+ \'Url\'\)\.replace\(\'Ad\', \'\'\)\.replace\(\'Url\'\, \'\'\)\](.*)\;", html)
-                if len(tokens) == 4:
-                    token = re.sub('\s|\+|\=|\'', '', tokens[2].strip())
-                    token += re.sub('\s|\+|\=|\'', '', tokens[3].strip())
+                token = None
+                ak = None
+
+                token_re = re.findall(r'Token(.*?)\,', html)
+                if len(token_re) > 0:
+                    token = re.sub(r'\:\s\'|\'$', '', token_re[0].strip())
+                ak_re = re.findall(r"params\[\'A(.*?)\;", html)
+
+                if len(ak_re) > 3:
+
+                    ak_1 = re.sub(r"[A-Za-z\+\s\]\=\']", '', ak_re[0].strip())
+                    ak_2 = re.sub(r"(.*?)\+", '', ak_re[2].strip()).strip()
+                    ak = int(ak_1) + int(ak_2)
+
+                if token is not None and ak is not None:
 
                     r = requests.get(base_url + '/scripts/generated/key.js?t=' + str(token) + '&' + str(time_val), headers=headers, timeout=self._timeout)
                     time.sleep(5)
-                    r = requests.get(base_url + '/intermission/loadTargetUrl?t=' + str(token), headers=headers, timeout=self._timeout)
+                    r = requests.get(base_url + '/intermission/loadTargetUrl?t=' + str(token) + '&ak=' + str(ak), headers=headers, timeout=self._timeout)
                     response = json.loads(r.text)
                     if response['Success'] == True:
                         if 'Url' in response:
@@ -138,6 +148,7 @@ class UnshortenIt(object):
                     retry_count += 1
                 else:
                     break
+
 
             return uri, 'Failed to extract link.'
 
@@ -174,7 +185,6 @@ class UnshortenIt(object):
                         "Referer": orig_uri,
                     }
                     r = requests.get(uri, headers=http_header, timeout=self._timeout)
-                    print(r.headers)
 
                     uri = r.url
                 return uri, r.status_code

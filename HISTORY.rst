@@ -34,3 +34,13 @@ History
 
 * Fixed adfoc.us issues resulting from changes to their site
 * Fixed linkbucks.com issues resulting from changes to their site
+
+0.1.7 (2014-02-03)
+++++++++++++++++++
+
+* Fixed linkbucks.com issues resulting from additional changes to their site
+
+0.1.8 (2014-02-04)
+++++++++++++++++++
+
+* Fixed linkbucks.com issues resulting from additional changes to their site
