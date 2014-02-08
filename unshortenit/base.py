@@ -7,16 +7,21 @@ try:
 except:
     adfly_support = False
 try:
+    from selenium.webdriver import PhantomJS
+    from contextlib import closing
+    linkbucks_support = True
+except:
+    linkbucks_support = False
+try:
     from urllib.request import urlsplit, urlparse
 except:
     from urlparse import urlsplit, urlparse
 import re
 import os
 import requests
-from io import open
 import time
-from random import randint
-import json
+from io import open
+
 
 class UnshortenIt(object):
 
@@ -55,7 +60,10 @@ class UnshortenIt(object):
         if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
             return self._unshorten_adfocus(uri)
         if re.search(self._linkbucks_regex, domain, re.IGNORECASE) or type == 'linkbucks':
-            return self._unshorten_linkbucks(uri)
+            if linkbucks_support:
+                return self._unshorten_linkbucks(uri)
+            else:
+                return uri, 'linkbucks.com not supported. Install selenium package to add support.'
         if re.search(self._lnxlu_regex, domain, re.IGNORECASE) or type == 'lnxlu':
             return self._unshorten_lnxlu(uri)
 
@@ -99,58 +107,22 @@ class UnshortenIt(object):
 
     def _unshorten_linkbucks(self, uri):
         try:
-            retry_limit = 4
-            retry_count = 0
-            while True:
+            with closing(PhantomJS(
+                    service_log_path=os.path.dirname(os.path.realpath(__file__)) + '/ghostdriver.log')) as browser:
+                browser.get(uri)
 
-                r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+                # wait 5 seconds
+                time.sleep(5)
 
-                html = r.text
-                o = urlparse(uri)
-                base_url = 'http://' + o.netloc
-                time_val = randint(1420000, 6400000)
+                page_source = browser.page_source
 
+                link = re.findall(r'skiplink(.*?)\>', page_source)
+                if link is not None and link is not '':
+                    link = re.sub(r'\shref\=|\"', '', link[0])
 
-                headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                            'Accept-Encoding': 'gzip,deflate,sdch',
-                            'Accept-Language': 'en-US,en;q=0.8',
-                            'Connection': 'keep-alive',
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36',
-                            'Host': o.netloc,
-                            'Referer': base_url + '/'}
-
-                token = None
-                ak = None
-
-                token_re = re.findall(r'Token(.*?)\,', html)
-                if len(token_re) > 0:
-                    token = re.sub(r'\:\s\'|\'$', '', token_re[0].strip())
-                ak_re = re.findall(r"params\[\'A(.*?)\;", html)
-
-                if len(ak_re) > 3:
-
-                    ak_1 = re.sub(r"[A-Za-z\+\s\]\=\']", '', ak_re[0].strip())
-                    ak_2 = re.sub(r"(.*?)\+", '', ak_re[2].strip()).strip()
-                    ak = int(ak_1) + int(ak_2)
-
-                if token is not None and ak is not None:
-
-                    r = requests.get(base_url + '/scripts/generated/key.js?t=' + str(token) + '&' + str(time_val), headers=headers, timeout=self._timeout)
-                    time.sleep(5)
-                    r = requests.get(base_url + '/intermission/loadTargetUrl?t=' + str(token) + '&ak=' + str(ak), headers=headers, timeout=self._timeout)
-                    response = json.loads(r.text)
-                    if response['Success'] == True:
-                        if 'Url' in response:
-                            url = response['Url']
-                            return url, r.status_code
-
-                if retry_count < retry_limit:
-                    retry_count += 1
+                    return link, 200
                 else:
-                    break
-
-
-            return uri, 'Failed to extract link.'
+                    return uri, 'Failed to extract link.'
 
         except Exception as e:
             return uri, str(e)

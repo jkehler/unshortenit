@@ -44,3 +44,8 @@ History
 ++++++++++++++++++
 
 * Fixed linkbucks.com issues resulting from additional changes to their site
+
+0.1.9 (2014-02-08)
+++++++++++++++++++
+
+* Switched linkbucks.com to use selenium PhantomJS driver due to ongoing challenges with their site
