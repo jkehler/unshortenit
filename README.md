@@ -2,7 +2,7 @@
 unshortenit
 ===============================
 
-Unshortens ad-based urls and 301 redirects. Supports adf.ly, lnx.lu, linkbucks.com, and adfoc.us
+Unshortens ad-based urls and 301 redirects. Supports adf.ly, lnx.lu, linkbucks.com, sh.st, and adfoc.us
 
 
 Features
