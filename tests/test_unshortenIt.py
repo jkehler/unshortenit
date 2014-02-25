@@ -5,16 +5,15 @@ import unshortenit
 class TestUnshortenIt(TestCase):
 
     def test_adfly(self):
-        if unshortenit.adfly_support:
-            self.assertEqual(unshortenit.unshorten('http://adf.ly/WzXu2'),
-                             ('http://www39.zippyshare.com/v/69303767/file.html', 200))
-            self.assertEqual(unshortenit.unshorten('http://adf.ly/1icWR'),
-                             ('http://adf.ly/1icWR', 'No ysmm variable found'))
-            self.assertEqual(unshortenit.unshorten('http://links.devitrianto.com/yy', type='adfly'),
-                             ('http://www.sendspace.com/file/a2z6ji', 200))
-        else:
-            self.assertEqual(unshortenit.unshorten('http://adf.ly/WzXu2'),
-                             ('http://adf.ly/WzXu2', 'adf.ly not supported. Install PyV8 to add support.'))
+        self.assertEqual(unshortenit.unshorten('http://adf.ly/WzXu2'),
+                         ('http://www39.zippyshare.com/v/69303767/file.html', 200))
+        self.assertEqual(unshortenit.unshorten('http://adf.ly/1icWR'),
+                         ('http://adf.ly/1icWR', 'No ysmm variable found'))
+        self.assertEqual(unshortenit.unshorten('http://links.devitrianto.com/yy', type='adfly'),
+                         ('http://www.sendspace.com/file/a2z6ji', 200))
+        self.assertEqual(unshortenit.unshorten('http://adf.ly/bJ8mm'),
+                         ('http://www.mediafire.com/download/cixal2y0auya19m/com.ratrodstudio.skateparty2.zip', 200))
+
 
     def test_linkbucks(self):
         self.assertEqual(unshortenit.unshorten('http://4647ed8c.linkbucks.com/'),
@@ -25,6 +24,9 @@ class TestUnshortenIt(TestCase):
 
     def test_lnxlu(self):
         self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))
+
+    def test_shst(self):
+        self.assertEqual(unshortenit.unshorten('http://sh.st/INTI'), ('https://adf.ly/b2H0Y', 200))
 
     def test_generic(self):
         self.assertEqual(unshortenit.unshorten('http://ul.to'), ('http://uploaded.net/', 200))

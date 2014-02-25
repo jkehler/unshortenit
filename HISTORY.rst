@@ -49,3 +49,10 @@ History
 ++++++++++++++++++
 
 * Switched linkbucks.com to use selenium PhantomJS driver due to ongoing challenges with their site
+
+0.2.0 (2014-02-25)
+++++++++++++++++++
+
+* Removed PyV8 requirement for adf.ly
+* Added ay.gy domain for adf.ly regex
+* Added sh.st support

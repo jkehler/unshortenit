@@ -3,4 +3,3 @@ include HISTORY.rst
 include LICENSE
 include README.md
 include Makefile
-include unshortenit/adfly.js

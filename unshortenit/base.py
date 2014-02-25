@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 try:
-    import PyV8
-    adfly_support = True
-except:
-    adfly_support = False
-try:
     from selenium.webdriver import PhantomJS
     from contextlib import closing
     linkbucks_support = True
@@ -20,8 +15,8 @@ import re
 import os
 import requests
 import time
-from io import open
-
+from base64 import b64decode
+import random
 
 class UnshortenIt(object):
 
@@ -30,33 +25,20 @@ class UnshortenIt(object):
                 'Accept-Language': 'en-US,en;q=0.8',
                 'Connection': 'keep-alive',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36'}
-    _adfly_regex = r'adf\.ly|q\.gs|j\.gs|u\.bb'
+    _adfly_regex = r'adf\.ly|q\.gs|j\.gs|u\.bb|ay\.gy'
     _linkbucks_regex = r'linkbucks\.com|any\.gs|cash4links\.co|cash4files\.co|dyo\.gs|filesonthe\.net|goneviral\.com|megaline\.co|miniurls\.co|qqc\.co|seriousdeals\.net|theseblogs\.com|theseforums\.com|tinylinks\.co|tubeviral\.com|ultrafiles\.net|urlbeat\.net|whackyvidz\.com|yyv\.co'
     _adfocus_regex = r'adfoc\.us'
     _lnxlu_regex = r'lnx\.lu'
+    _shst_regex = r'sh\.st'
     _this_dir, _this_filename = os.path.split(__file__)
     _timeout = 10
-
-    def __init__(self, adfly_js_file=None):
-        if adfly_support:
-            self.ctx = PyV8.JSContext()
-            self.ctx.enter()
-            if adfly_js_file is None:
-                adfly_js_file = os.path.join(self._this_dir, 'adfly.js')
-            if os.path.isfile(adfly_js_file):
-                file = open(adfly_js_file, 'r', encoding="iso-8859-1")
-                self.adfly_js = file.read()
-                file.close()
 
     def unshorten(self, uri, type=None, timeout=10):
         domain = urlsplit(uri).netloc
         self._timeout = timeout
 
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
-            if adfly_support:
-                return self._unshorten_adfly(uri)
-            else:
-                return uri, 'adf.ly not supported. Install PyV8 to add support.'
+            return self._unshorten_adfly(uri)
         if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
             return self._unshorten_adfocus(uri)
         if re.search(self._linkbucks_regex, domain, re.IGNORECASE) or type == 'linkbucks':
@@ -66,6 +48,8 @@ class UnshortenIt(object):
                 return uri, 'linkbucks.com not supported. Install selenium package to add support.'
         if re.search(self._lnxlu_regex, domain, re.IGNORECASE) or type == 'lnxlu':
             return self._unshorten_lnxlu(uri)
+        if re.search(self._shst_regex, domain, re.IGNORECASE):
+            return self._unshorten_shst(uri)
 
         try:
             # headers stop t.co from working so omit headers if this is a t.co link
@@ -96,8 +80,20 @@ class UnshortenIt(object):
             ysmm = re.findall(r"var ysmm =.*\;?", html)
 
             if len(ysmm) > 0:
+                ysmm = re.sub(r'var ysmm \= \'|\'\;', '', ysmm[0])
 
-                decoded_uri = self.ctx.eval(ysmm[0] + self.adfly_js)
+                left = ''
+                right = ''
+
+                for c in [ysmm[i:i+2] for i in range(0, len(ysmm), 2)]:
+                    left += c[0]
+                    right = c[1] + right
+
+                decoded_uri = b64decode(left + right)[2:].decode()
+
+                if re.search(r'go\.php\?u\=', decoded_uri):
+                    decoded_uri = b64decode(re.sub(r'(.*?)u=', '', decoded_uri)).decode()
+
                 return decoded_uri, r.status_code
             else:
                 return uri, 'No ysmm variable found'
@@ -117,9 +113,10 @@ class UnshortenIt(object):
                 page_source = browser.page_source
 
                 link = re.findall(r'skiplink(.*?)\>', page_source)
-                if link is not None and link is not '':
+                if link is not None:
                     link = re.sub(r'\shref\=|\"', '', link[0])
-
+                    if link == '':
+                        return uri, 'Failed to extract link.'
                     return link, 200
                 else:
                     return uri, 'Failed to extract link.'
@@ -178,6 +175,48 @@ class UnshortenIt(object):
                 return r.url, r.status_code
             else:
                 return uri, 'No click variable found'
+        except Exception as e:
+            return uri, str(e)
+
+    def _unshorten_shst(self, uri):
+        try:
+            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+            html = r.text
+
+            session_id = re.findall(r'sessionId\:(.*?)\"\,', html)
+            if len(session_id) > 0:
+                session_id = re.sub(r'\s\"', '', session_id[0])
+
+                http_header = {
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+                    "Accept-Encoding": "gzip,deflate,sdch",
+                    "Accept-Language": "en-US,en;,q=0.8",
+                    "Connection": "keep-alive",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Host": "sh.st",
+                    "Referer": uri,
+                    "Origin": "http://sh.st",
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+
+                browser_token = random.randrange(180000000, 194740476, 5)
+
+                time.sleep(5)
+
+                payload = {'sessionId': session_id, 'browserToken': browser_token}
+                r = requests.get('http://sh.st/adSession/callback', params=payload, headers=http_header, timeout=self._timeout)
+
+                if r.status_code == 200:
+                    resp_uri = r.json()['destinationUrl']
+                    if resp_uri is not None:
+                        uri = resp_uri
+                    else:
+                        return uri, 'Error extracting url'
+                else:
+                    return uri, 'Error extracting url'
+
+            return uri, r.status_code
+
         except Exception as e:
             return uri, str(e)
 

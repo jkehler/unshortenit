@@ -3,8 +3,6 @@
 help:
 	@echo "build27 - build Python 2.7 virtualenv"
 	@echo "build33 - build Python 3.3 virtualenv"
-	@echo "build-pyv8-py33 - build PyV8 package for Python 3.3"
-	@echo "build-pyv8-py27 - build PyV8 package for Python 2.7"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "lint - check style with flake8"
@@ -16,31 +14,10 @@ help:
 build27:
 	virtualenv -p python2.7 env
 	env/bin/pip install --use-mirrors -r requirements.txt
-	make build-pyv8-py27
-	cd build/pyv8-read-only && V8_HOME=$(CURDIR)/build/v8 env/bin/python setup.py install && cd ../../
 
 build33:
 	virtualenv -p python3.3 env
 	env/bin/pip install --use-mirrors -r requirements.txt
-	make build-pyv8-py33
-	cd build/pyv8-read-only && V8_HOME=$(CURDIR)/build/v8 env/bin/python setup.py install && cd ../../
-
-build-pyv8-py33:
-	sudo apt-get install gyp subversion build-essential libboost-python-dev python3.3-dev libboost-system-dev libboost-thread-dev
-	mkdir -p build
-	svn checkout http://v8.googlecode.com/svn/trunk/ build/v8
-	svn checkout http://pyv8.googlecode.com/svn/trunk/ build/pyv8-read-only
-	$(MAKE) -C build/v8 dependencies
-	sed -i.bak s/\'boost\_python\'/\'boost_python-py33\'/ build/pyv8-read-only/setup.py
-	cd build/pyv8-read-only && V8_HOME=$(CURDIR)/build/v8 python3.3 setup.py build && cd ../../
-
-build-pyv8-py27:
-	sudo apt-get install gyp subversion build-essential libboost-python-dev python2.7-dev libboost-system-dev libboost-thread-dev
-	mkdir -p build
-	svn checkout http://v8.googlecode.com/svn/trunk/ build/v8
-	svn checkout http://pyv8.googlecode.com/svn/trunk/ build/pyv8-read-only
-	$(MAKE) -C build/v8 dependencies
-	cd build/pyv8-read-only && V8_HOME=$(CURDIR)/build/v8 python3.3 setup.py build && cd ../../
 
 clean: clean-build clean-pyc
 

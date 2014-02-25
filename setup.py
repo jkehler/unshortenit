@@ -3,7 +3,7 @@
 
 import os
 import sys
-
+import unshortenit
 
 try:
     from setuptools import setup
@@ -19,8 +19,8 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='unshortenit',
-    version='0.1.8',
-    description='Unshortens adf.ly, adfoc.us, lnx.lu, linkbucks, and any 301 redirected shortener urls',
+    version=unshortenit.__version__,
+    description='Unshortens adf.ly, adfoc.us, lnx.lu, linkbucks, sh.st, and any 301 redirected shortener urls',
     long_description=readme + '\n\n' + history,
     author='Jeff Kehler',
     author_email='jeffrey.kehler@gmail.com',
@@ -34,7 +34,7 @@ setup(
     ],
     license="MIT",
     zip_safe=False,
-    keywords='unshortener adf.ly linkbucks lnx.lu adfoc.us shortner',
+    keywords='unshortener adf.ly linkbucks lnx.lu adfoc.us sh.st shortener',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
