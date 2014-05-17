@@ -89,7 +89,7 @@ class UnshortenIt(object):
                     left += c[0]
                     right = c[1] + right
 
-                decoded_uri = b64decode(left + right)[2:].decode()
+                decoded_uri = b64decode(left.encode() + right.encode())[2:].decode()
 
                 if re.search(r'go\.php\?u\=', decoded_uri):
                     decoded_uri = b64decode(re.sub(r'(.*?)u=', '', decoded_uri)).decode()
