@@ -2,8 +2,9 @@
 unshortenit
 ===============================
 
-Unshortens ad-based urls and 301 redirects. Supports adf.ly, lnx.lu, linkbucks.com, sh.st, and adfoc.us
+Unshortens ad-based urls and 301 redirects. Supports adf.ly, lnx.lu, and sh.st.
 
+* Linkbucks.com and adfoc.us support temporarly removed.
 
 Features
 --------
@@ -12,11 +13,9 @@ Features
     - Adf.ly and related subdomains
     - Custom adf.ly domains by passing the type='adfly' parameter
     - Lnx.lu
-    - Linkbucks.com and related subdomains (Selenium library with PhantomJS required)
-    - Adfoc.us
     - Sh.st
 - Supports any 301 redirected urls
-- Python 2.7 and 3.3 support
+- Python 2.7, 3.3, and 3.4 support
 
 Usage
 -----
@@ -34,4 +33,3 @@ Installation
 
     pip install unshortenit
 
-In order to enable linkbucks.com support you will need to install selenium along with PhantomJS.
