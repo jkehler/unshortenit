@@ -15,12 +15,12 @@ class TestUnshortenIt(TestCase):
                          ('http://www.mediafire.com/download/cixal2y0auya19m/com.ratrodstudio.skateparty2.zip', 200))
 
 
-    def test_linkbucks(self):
-        self.assertEqual(unshortenit.unshorten('http://4647ed8c.linkbucks.com/'),
-                         ('http://www.filedownloads.org/1rpnb9dudo7o/My_Backup_Pro_v3.2.5zz.zip.html', 200))
-
-    def test_adfocus(self):
-        self.assertEqual(unshortenit.unshorten('http://adfoc.us/340347863622'), ('http://www7.zippyshare.com/', 404))
+#     def test_linkbucks(self):
+#         self.assertEqual(unshortenit.unshorten('http://4647ed8c.linkbucks.com/'),
+#                          ('http://www.filedownloads.org/1rpnb9dudo7o/My_Backup_Pro_v3.2.5zz.zip.html', 200))
+#
+#     def test_adfocus(self):
+#         self.assertEqual(unshortenit.unshorten('http://adfoc.us/340347863622'), ('http://www7.zippyshare.com/', 404))
 
     def test_lnxlu(self):
         self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))
