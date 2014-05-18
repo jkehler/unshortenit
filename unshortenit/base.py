@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from selenium.webdriver import PhantomJS
+    from selenium import webdriver
     from contextlib import closing
     linkbucks_support = True
 except:
@@ -103,20 +103,35 @@ class UnshortenIt(object):
 
     def _unshorten_linkbucks(self, uri):
         try:
-            with closing(PhantomJS(
+
+            with closing(webdriver.PhantomJS(
                     service_log_path=os.path.dirname(os.path.realpath(__file__)) + '/ghostdriver.log')) as browser:
+
                 browser.get(uri)
 
                 # wait 5 seconds
-                time.sleep(5)
+                time.sleep(7)
 
                 page_source = browser.page_source
+                #print(page_source)
+
+                #test.click()
+
+
+                #print(browser.execute_script("return params['AuthKey'];"))
 
                 link = re.findall(r'skiplink(.*?)\>', page_source)
                 if link is not None:
                     link = re.sub(r'\shref\=|\"', '', link[0])
                     if link == '':
                         return uri, 'Failed to extract link.'
+
+                    if link == '#':
+                        test = browser.find_element_by_id("button")
+                        test.click()
+                        time.sleep(5)
+                        print('cliecked')
+                        print(browser.current_url)
                     return link, 200
                 else:
                     return uri, 'Failed to extract link.'
@@ -142,6 +157,26 @@ class UnshortenIt(object):
 
             if len(adlink) > 0:
                 uri = re.sub('^click_url = "|"\;$', '', adlink[0])
+
+                key = re.sub(r'(.*)servehash\=|\&amp.*$', '', uri)
+                http_header = {
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+                    "Accept-Encoding": "gzip,deflate,sdch",
+                    "Accept-Language": "en-US,en;,q=0.8",
+                    "Connection": "keep-alive",
+                    "Host": "adfoc.us",
+                    "Cache-Control": "max-age=0",
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "Origin": "http://adfoc.us",
+                    "Referer": orig_uri,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+                payload = {'key': key}
+                print(key, len(key))
+                r = requests.get('http://adfoc.us/serve/credit', params=payload, headers=http_header)
+                print(r.status_code)
+                time.sleep(5)
+                print(uri)
                 if re.search(r'http(s|)\://adfoc\.us/serve/skip/\?id\=', uri):
                     http_header = {
                         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
