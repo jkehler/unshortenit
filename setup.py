@@ -20,7 +20,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='unshortenit',
     version=unshortenit.__version__,
-    description='Unshortens adf.ly, adfoc.us, lnx.lu, linkbucks, sh.st, and any 301 redirected shortener urls',
+    description='Unshortens adf.ly, lnx.lu, sh.st, and any 301 redirected shortener urls',
     long_description=readme + '\n\n' + history,
     author='Jeff Kehler',
     author_email='jeffrey.kehler@gmail.com',
@@ -34,7 +34,7 @@ setup(
     ],
     license="MIT",
     zip_safe=False,
-    keywords='unshortener adf.ly linkbucks lnx.lu adfoc.us sh.st shortener',
+    keywords='unshortener adf.ly lnx.lu sh.st shortener',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

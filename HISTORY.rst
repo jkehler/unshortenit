@@ -56,3 +56,10 @@ History
 * Removed PyV8 requirement for adf.ly
 * Added ay.gy domain for adf.ly regex
 * Added sh.st support
+
+0.2.1 (2014-05-18)
+++++++++++++++++++
+
+* Removed tests for linkbucks.com and adfoc.us. Support has been temporarly
+  removed.
+* Merged Debian Python 3.2 fix by anaconda
