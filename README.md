@@ -12,7 +12,6 @@ Features
 - Supports unshortening the following ad-based shortners:
     - Adf.ly and related subdomains
     - Custom adf.ly domains by passing the type='adfly' parameter
-    - Lnx.lu
     - Sh.st
 - Supports any 301 redirected urls
 - Python 2.7, 3.3, and 3.4 support

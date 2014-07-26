@@ -22,8 +22,8 @@ class TestUnshortenIt(TestCase):
 #     def test_adfocus(self):
 #         self.assertEqual(unshortenit.unshorten('http://adfoc.us/340347863622'), ('http://www7.zippyshare.com/', 404))
 
-    def test_lnxlu(self):
-        self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))
+    # def test_lnxlu(self):
+    #     self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))
 
     def test_shst(self):
         self.assertEqual(unshortenit.unshorten('http://sh.st/INTI'), ('https://adf.ly/b2H0Y', 200))

@@ -20,7 +20,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='unshortenit',
     version=unshortenit.__version__,
-    description='Unshortens adf.ly, lnx.lu, sh.st, and any 301 redirected shortener urls',
+    description='Unshortens adf.ly, sh.st, and any 301 redirected shortener urls',
     long_description=readme + '\n\n' + history,
     author='Jeff Kehler',
     author_email='jeffrey.kehler@gmail.com',

@@ -63,3 +63,8 @@ History
 * Removed tests for linkbucks.com and adfoc.us. Support has been temporarly
   removed.
 * Merged Debian Python 3.2 fix by anaconda
+
+0.2.2 (2014-07-28)
+++++++++++++++++++
+
+* Removed lnx.lu as site is out of service
