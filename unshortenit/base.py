@@ -15,6 +15,7 @@ import re
 import os
 import requests
 import time
+import json
 from base64 import b64decode
 import random
 
@@ -199,15 +200,14 @@ class UnshortenIt(object):
                     "X-Requested-With": "XMLHttpRequest"
                 }
 
-                browser_token = random.randrange(180000000, 194740476, 5)
-
                 time.sleep(5)
 
-                payload = {'sessionId': session_id, 'browserToken': browser_token}
-                r = requests.get('http://sh.st/adSession/callback', params=payload, headers=http_header, timeout=self._timeout)
-
+                payload = {'adSessionId': session_id, 'callback': 'c'}
+                r = requests.get('http://sh.st/shortest-url/end-adsession', params=payload, headers=http_header, timeout=self._timeout)
+                response = r.content[6:-2]
+                
                 if r.status_code == 200:
-                    resp_uri = r.json()['destinationUrl']
+                    resp_uri = json.loads(response)['destinationUrl']
                     if resp_uri is not None:
                         uri = resp_uri
                     else:
