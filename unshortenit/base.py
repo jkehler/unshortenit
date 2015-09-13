@@ -204,7 +204,7 @@ class UnshortenIt(object):
 
                 payload = {'adSessionId': session_id, 'callback': 'c'}
                 r = requests.get('http://sh.st/shortest-url/end-adsession', params=payload, headers=http_header, timeout=self._timeout)
-                response = r.content[6:-2]
+                response = r.content[6:-2].decode('utf-8')
                 
                 if r.status_code == 200:
                     resp_uri = json.loads(response)['destinationUrl']
