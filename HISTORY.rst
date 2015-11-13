@@ -68,3 +68,8 @@ History
 ++++++++++++++++++
 
 * Removed lnx.lu as site is out of service
+
+0.2.3 (2015-11-13)
+++++++++++++++++++
+
+* Fixed sh.st support
