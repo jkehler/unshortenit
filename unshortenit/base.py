@@ -8,9 +8,9 @@ try:
 except:
     linkbucks_support = False
 try:
-    from urllib.request import urlsplit, urlparse
+    from urllib.parse import urlsplit, urlparse, parse_qs
 except:
-    from urlparse import urlsplit, urlparse
+    from urlparse import urlsplit, urlparse, parse_qs
 import re
 import os
 import requests
@@ -35,8 +35,14 @@ class UnshortenIt(object):
     _timeout = 10
 
     def unshorten(self, uri, type=None, timeout=10):
+
         domain = urlsplit(uri).netloc
         self._timeout = timeout
+
+        had_google_outbound, uri = self._clear_google_outbound_proxy(uri)
+        if had_google_outbound:
+            return uri, 200
+
 
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             return self._unshorten_adfly(uri)
@@ -70,8 +76,39 @@ class UnshortenIt(object):
                 else:
                     return r.url, r.status_code
 
+
         except Exception as e:
             return uri, str(e)
+
+
+    def _clear_google_outbound_proxy(self, url):
+        '''
+        So google proxies all their outbound links through a redirect so they can detect outbound links.
+        This call strips them out if they are present.
+
+        This is useful for doing things like parsing google search results, or if you're scraping google
+        docs, where google inserts hit-counters on all outbound links.
+        '''
+
+        # This is kind of hacky, because we need to check both the netloc AND
+        # part of the path. We could use urllib.parse.urlsplit, but it's
+        # easier and just as effective to use string checks.
+        if url.startswith("http://www.google.com/url?") or \
+           url.startswith("https://www.google.com/url?"):
+
+            qs = urlparse(url).query
+            query = parse_qs(qs)
+
+            if "q" in query:  # Google doc outbound links (maybe blogspot, too)
+                return True, query["q"].pop()
+            elif "url" in query:  # Outbound links from google searches
+                return True, query["url"].pop()
+            else:
+                raise ValueError("Google outbound proxy URL without a target url ('%s')?" % url)
+
+
+        return False, url
+
 
     def _unshorten_adfly(self, uri):
 
@@ -205,7 +242,7 @@ class UnshortenIt(object):
                 payload = {'adSessionId': session_id, 'callback': 'c'}
                 r = requests.get('http://sh.st/shortest-url/end-adsession', params=payload, headers=http_header, timeout=self._timeout)
                 response = r.content[6:-2].decode('utf-8')
-                
+
                 if r.status_code == 200:
                     resp_uri = json.loads(response)['destinationUrl']
                     if resp_uri is not None:

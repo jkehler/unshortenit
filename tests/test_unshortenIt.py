@@ -34,3 +34,7 @@ class TestUnshortenIt(TestCase):
                          ('http://www.igen.fr/app-store/drift-mania-street-outlaws-du-drift-son-paroxysme-108452', 200))
         self.assertEqual(unshortenit.unshorten('http://p.ost.im/d7DPHP'),
                          ('http://crazymikesapps.com/drift-mania-street-outlaws-video-review/', 200))
+
+    def test_google_unwrap(self):
+        self.assertEqual(unshortenit.unshorten('https://www.google.com/url?url=https://en.wikipedia.org/wiki/Google&rct=j&q=&esrc=s&sa=U&ved=0ahUKEwijvuKNxdXKAhVT0GMKHQSDAp8QFgg3MAs&sig2=nsR8hgyoNqY87WcWVtt9Hw&usg=AFQjCNFUmLH6w9LpY157wHV4SowfxvZ4Ig'),
+            ('https://en.wikipedia.org/wiki/Google', 200))
