@@ -34,10 +34,9 @@ class UnshortenIt(object):
     _this_dir, _this_filename = os.path.split(__file__)
     _timeout = 10
 
-    def unshorten(self, uri, type=None, timeout=10):
+    def unshorten(self, uri, type=None):
 
         domain = urlsplit(uri).netloc
-        self._timeout = timeout
 
         had_google_outbound, uri = self._clear_google_outbound_proxy(uri)
         if had_google_outbound:
@@ -58,7 +57,19 @@ class UnshortenIt(object):
         if re.search(self._shst_regex, domain, re.IGNORECASE):
             return self._unshorten_shst(uri)
 
+        return uri, 200
+
+    def unwrap_30x(self, uri, timeout=10):
+
+        domain = urlsplit(uri).netloc
+        self._timeout = timeout
+
+        loop_counter = 0
         try:
+
+            if loop_counter > 5:
+                raise ValueError("Infinitely looping redirect from URL: '%s'" % (uri, ))
+
             # headers stop t.co from working so omit headers if this is a t.co link
             if domain == 't.co':
                 r = requests.get(uri, timeout=self._timeout)
@@ -73,13 +84,13 @@ class UnshortenIt(object):
                 if 'location' in r.headers:
                     r = requests.head(r.headers['location'])
                     uri = r.url
+                    loop_counter += 1
                 else:
                     return r.url, r.status_code
 
 
         except Exception as e:
             return uri, str(e)
-
 
     def _clear_google_outbound_proxy(self, url):
         '''
@@ -258,6 +269,19 @@ class UnshortenIt(object):
             return uri, str(e)
 
 
+def unwrap_30x_only(uri, type=None, timeout=10):
+    unshortener = UnshortenIt()
+    uri, status = unshortener.unshorten(uri, type=type)
+    return uri, status
+
+def unshorten_only(uri, type=None, timeout=10):
+    unshortener = UnshortenIt()
+    uri, status = unshortener.unshorten(uri, type=type)
+    return uri, status
+
 def unshorten(uri, type=None, timeout=10):
     unshortener = UnshortenIt()
-    return unshortener.unshorten(uri, type, timeout)
+    uri, status = unshortener.unshorten(uri, type=type)
+    if status == 200:
+        uri, status = unshortener.unwrap_30x(uri, timeout=timeout)
+    return uri, status
