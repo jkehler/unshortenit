@@ -28,14 +28,11 @@ class TestUnshortenIt(TestCase):
                          ('https://www.sendspace.com/file/a2z6ji', 200))   # sendspace HEAD responses force HTTPS
 
     # def test_linkbucks(self):
-    #     self.assertEqual(unshortenit.unshorten('http://4647ed8c.linkbucks.com/'),
-    #                      ('http://www.filedownloads.org/1rpnb9dudo7o/My_Backup_Pro_v3.2.5zz.zip.html', 200))
+    #     self.assertEqual(unshortenit.unshorten('http://www.linkbucks.com/RA1R'),
+    #                      ('https://nepustation.wordpress.com/cheat-majutsu-de-unmei-wo-nejifuseru/forth-episode-kunas-song/', 200))
+    #     self.assertEqual(unshortenit.unshorten('http://www.linkbucks.com/lrC9'),
+    #                      ('http://rebirthonlineworld.com/support-manager/support-chapter-1/', 200))
 
-    # def test_adfocus(self):
-    #     self.assertEqual(unshortenit.unshorten('http://adfoc.us/340347863622'), ('http://www7.zippyshare.com/', 404))
-
-    # def test_lnxlu(self):
-    #     self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))
 
     def test_shst(self):
         # If you HEAD 'https://adf.ly/b2H0Y', it returns 'http://ay.gy/b2H0Y' for... some reason
@@ -51,3 +48,10 @@ class TestUnshortenIt(TestCase):
     def test_google_unwrap(self):
         self.assertEqual(unshortenit.unshorten('https://www.google.com/url?url=https://en.wikipedia.org/wiki/Google&rct=j&q=&esrc=s&sa=U&ved=0ahUKEwijvuKNxdXKAhVT0GMKHQSDAp8QFgg3MAs&sig2=nsR8hgyoNqY87WcWVtt9Hw&usg=AFQjCNFUmLH6w9LpY157wHV4SowfxvZ4Ig'),
             ('https://en.wikipedia.org/wiki/Google', 200))
+
+
+    # def test_adfocus(self):
+    #     self.assertEqual(unshortenit.unshorten('http://adfoc.us/340347863622'), ('http://www7.zippyshare.com/', 404))
+
+    # def test_lnxlu(self):
+    #     self.assertEqual(unshortenit.unshorten('http://lnx.lu/1CKw'), ('http://www.reddit.com/', 200))

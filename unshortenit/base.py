@@ -2,12 +2,6 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from selenium.webdriver import PhantomJS
-    from contextlib import closing
-    linkbucks_support = True
-except:
-    linkbucks_support = False
-try:
     from urllib.parse import urlsplit, urlparse, parse_qs
 except:
     from urlparse import urlsplit, urlparse, parse_qs
@@ -17,7 +11,17 @@ import requests
 import time
 import json
 from base64 import b64decode
-import random
+import copy
+
+HTTP_HEADER = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Encoding": "gzip,deflate,sdch",
+    "Connection": "keep-alive",
+    "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
+}
 
 class UnshortenIt(object):
 
@@ -48,10 +52,7 @@ class UnshortenIt(object):
         if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
             return self._unshorten_adfocus(uri)
         if re.search(self._linkbucks_regex, domain, re.IGNORECASE) or type == 'linkbucks':
-            if linkbucks_support:
-                return self._unshorten_linkbucks(uri)
-            else:
-                return uri, 'linkbucks.com not supported. Install selenium package to add support.'
+            return self._unshorten_linkbucks(uri)
         if re.search(self._lnxlu_regex, domain, re.IGNORECASE) or type == 'lnxlu':
             return self._unshorten_lnxlu(uri)
         if re.search(self._shst_regex, domain, re.IGNORECASE):
@@ -151,6 +152,12 @@ class UnshortenIt(object):
             return uri, str(e)
 
     def _unshorten_linkbucks(self, uri):
+        print("Unshortening: ", uri)
+
+
+        r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
+        print(r.text)
+
         try:
             with closing(PhantomJS(
                     service_log_path=os.path.dirname(os.path.realpath(__file__)) + '/ghostdriver.log')) as browser:
@@ -176,15 +183,9 @@ class UnshortenIt(object):
     def _unshorten_adfocus(self, uri):
         orig_uri = uri
         try:
-            http_header = {
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4",
-                "Cache-Control": "no-cache",
-                "Pragma": "no-cache"
-            }
 
-            r = requests.get(uri, headers=http_header, timeout=self._timeout)
+
+            r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
             html = r.text
 
             adlink = re.findall("click_url =.*;", html)
@@ -192,16 +193,11 @@ class UnshortenIt(object):
             if len(adlink) > 0:
                 uri = re.sub('^click_url = "|"\;$', '', adlink[0])
                 if re.search(r'http(s|)\://adfoc\.us/serve/skip/\?id\=', uri):
-                    http_header = {
-                        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
-                        "Accept-Encoding": "gzip,deflate,sdch",
-                        "Accept-Language": "en-US,en;,q=0.8",
-                        "Connection": "keep-alive",
-                        "Host": "adfoc.us",
-                        "Cache-Control": "no-cache",
-                        "Pragma": "no-cache",
-                        "Referer": orig_uri,
-                    }
+
+                    http_header = copy.copy(HTTP_HEADER)
+                    http_header["Host"]    = "adfoc.us"
+                    http_header["Referer"] = orig_uri
+
                     r = requests.get(uri, headers=http_header, timeout=self._timeout)
 
                     uri = r.url
@@ -236,17 +232,13 @@ class UnshortenIt(object):
             if len(session_id) > 0:
                 session_id = re.sub(r'\s\"', '', session_id[0])
 
-                http_header = {
-                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
-                    "Accept-Encoding": "gzip,deflate,sdch",
-                    "Accept-Language": "en-US,en;,q=0.8",
-                    "Connection": "keep-alive",
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Host": "sh.st",
-                    "Referer": uri,
-                    "Origin": "http://sh.st",
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+                http_header = copy.copy(HTTP_HEADER)
+                http_header["Content-Type"]     = "application/x-www-form-urlencoded"
+                http_header["Host"]             = "sh.st"
+                http_header["Referer"]          = uri
+                http_header["Origin"]           = "http://sh.st"
+                http_header["X-Requested-With"] = "XMLHttpRequest"
+
 
                 time.sleep(5)
 
