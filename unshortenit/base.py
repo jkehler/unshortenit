@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from urllib.parse import urlsplit, urlparse, parse_qs
+    from urllib.parse import urlsplit, urlparse, parse_qs, urljoin
 except:
-    from urlparse import urlsplit, urlparse, parse_qs
+    from urlparse import urlsplit, urlparse, parse_qs, urljoin
 import re
 import os
 import requests
@@ -22,6 +22,15 @@ HTTP_HEADER = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache"
 }
+
+
+def find_in_text(regex, text, flags = re.IGNORECASE | re.DOTALL):
+    rec = re.compile(regex, flags=flags)
+    match = rec.search(text)
+    if not match:
+        return False
+    return match.group(1)
+
 
 class UnshortenIt(object):
 
@@ -151,34 +160,127 @@ class UnshortenIt(object):
         except Exception as e:
             return uri, str(e)
 
-    def _unshorten_linkbucks(self, uri):
-        print("Unshortening: ", uri)
 
+
+    def _unshorten_linkbucks(self, uri):
+        '''
+        (Attempt) to decode linkbucks content. HEAVILY based on the OSS jDownloader codebase.
+        This has necessidated a license change.
+
+        '''
 
         r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
-        print(r.text)
 
-        try:
-            with closing(PhantomJS(
-                    service_log_path=os.path.dirname(os.path.realpath(__file__)) + '/ghostdriver.log')) as browser:
-                browser.get(uri)
+        firstGet = time.time()
 
-                # wait 5 seconds
-                time.sleep(5)
+        baseloc = r.url
 
-                page_source = browser.page_source
+        if "/notfound/" in r.url or \
+            "(>Link Not Found<|>The link may have been deleted by the owner|To access the content, you must complete a quick survey\.)" in r.text:
+            return uri, 'Error: Link not found or requires a survey!'
 
-                link = re.findall(r'skiplink(.*?)\>', page_source)
-                if link is not None:
-                    link = re.sub(r'\shref\=|\"', '', link[0])
-                    if link == '':
-                        return uri, 'Failed to extract link.'
-                    return link, 200
-                else:
-                    return uri, 'Failed to extract link.'
+        link = None
 
-        except Exception as e:
-            return uri, str(e)
+        content = r.text
+
+        regexes = [
+            r"<div id=\"lb_header\">.*?/a>.*?<a.*?href=\"(.*?)\".*?class=\"lb",
+            r"AdBriteInit\(\"(.*?)\"\)",
+            r"Linkbucks\.TargetUrl = '(.*?)';",
+            r"Lbjs\.TargetUrl = '(http://[^<>\"]*?)'",
+            r"src=\"http://static\.linkbucks\.com/tmpl/mint/img/lb\.gif\" /></a>.*?<a href=\"(.*?)\"",
+            r"id=\"content\" src=\"([^\"]*)",
+        ]
+
+
+        for regex in regexes:
+            if self.inValidate(link):
+                link = find_in_text(regex, content)
+
+        if self.inValidate(link):
+            match = find_in_text(r"noresize=\"[0-9+]\" src=\"(http.*?)\"", content)
+            if match:
+                link = find_in_text(r"\"frame2\" frameborder.*?src=\"(.*?)\"", content)
+
+        if self.inValidate(link):
+            scripts = re.findall("(<script type=\"text/javascript\">[^<]+</script>)", content)
+            if not scripts:
+                return uri, "No script bodies found?"
+
+
+            js = False
+
+            for script in scripts:
+                # cleanup
+                script = re.sub(r"[\r\n\s]+\/\/\s*[^\r\n]+", "", script)
+                if re.search(r"\s*var\s*f\s*=\s*window\['init'\s*\+\s*'Lb'\s*\+\s*'js'\s*\+\s*''\];[\r\n\s]+", script):
+                    js = script
+
+
+            if not js:
+                return uri, "Could not find correct script?"
+
+            token = find_in_text(r"Token\s*:\s*'([a-f0-9]{40})'", js)
+            if not token:
+                token = find_in_text(r"\?t=([a-f0-9]{40})", js)
+
+            assert token
+
+
+            authKeyMatchStr = r"A(?:'\s*\+\s*')?u(?:'\s*\+\s*')?t(?:'\s*\+\s*')?h(?:'\s*\+\s*')?K(?:'\s*\+\s*')?e(?:'\s*\+\s*')?y"
+            l1 = find_in_text(r"\s*params\['" + authKeyMatchStr + r"'\]\s*=\s*(\d+?);", js)
+            l2 = find_in_text(r"\s*params\['" + authKeyMatchStr + r"'\]\s*=\s?params\['" + authKeyMatchStr + r"'\]\s*\+\s*(\d+?);", js)
+
+            if any([not l1, not l2, not token]):
+                return uri, "Missing required tokens?"
+
+
+            print(l1, l2)
+
+
+            authkey = int(l1) + int(l2)
+
+
+
+            p1_url = urljoin(baseloc, "/director/?t={tok}".format(tok=token))
+            print(p1_url)
+            r2 = requests.get(p1_url, headers=HTTP_HEADER, timeout=self._timeout, cookies=r.cookies)
+
+            p1_url = urljoin(baseloc, "/scripts/jquery.js?r={tok}&{key}".format(tok=token, key=l1))
+            print(p1_url)
+            r2_1 = requests.get(p1_url, headers=HTTP_HEADER, timeout=self._timeout, cookies=r.cookies)
+
+
+            time_left = 5.033 - (time.time() - firstGet)
+            time.sleep(max(time_left, 0))
+
+            p3_url = urljoin(baseloc, "/intermission/loadTargetUrl?t={tok}&aK={key}&a_b=false".format(tok=token, key=str(authkey)))
+            r3 = requests.get(p3_url, headers=HTTP_HEADER, timeout=self._timeout, cookies=r2.cookies)
+
+            resp_json = json.loads(r3.text)
+            if "Url" in resp_json:
+                return resp_json['Url'], r3.status_code
+
+            print(p3_url)
+            print(r3)
+            print(r3.text)
+            print(resp_json)
+
+
+
+        return "Wat", "wat"
+
+
+    def inValidate(self, s):
+        # Original conditional:
+        # (s == null || s != null && (s.matches("[\r\n\t ]+") || s.equals("") || s.equalsIgnoreCase("about:blank")))
+        if not s:
+            return True
+
+        if re.search("[\r\n\t ]+", s) or s.lower() == "about:blank":
+            return True
+        else:
+            return False
 
     def _unshorten_adfocus(self, uri):
         orig_uri = uri
