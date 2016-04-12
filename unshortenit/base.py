@@ -15,8 +15,12 @@ import re
 import os
 import requests
 import time
+import json
 from base64 import b64decode
-import random
+
+
+INVALID_URL_ERROR_CODE = -1
+
 
 class UnshortenIt(object):
 
@@ -30,12 +34,16 @@ class UnshortenIt(object):
     _adfocus_regex = r'adfoc\.us'
     _lnxlu_regex = r'lnx\.lu'
     _shst_regex = r'sh\.st'
+    _hrefli_regex = r'href\.li'
     _this_dir, _this_filename = os.path.split(__file__)
     _timeout = 10
 
     def unshorten(self, uri, type=None, timeout=10):
         domain = urlsplit(uri).netloc
         self._timeout = timeout
+
+        if not domain:
+            return uri, INVALID_URL_ERROR_CODE
 
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             return self._unshorten_adfly(uri)
@@ -50,6 +58,8 @@ class UnshortenIt(object):
             return self._unshorten_lnxlu(uri)
         if re.search(self._shst_regex, domain, re.IGNORECASE):
             return self._unshorten_shst(uri)
+        if re.search(self._hrefli_regex, domain, re.IGNORECASE):
+            return self._unshorten_hrefli(uri)
 
         try:
             # headers stop t.co from working so omit headers if this is a t.co link
@@ -61,13 +71,17 @@ class UnshortenIt(object):
                 r = requests.get(uri, headers=self._headers, timeout=self._timeout)
                 uri = re.findall(r'.*url\=(.*?)\"\.*',r.text)[0]
                 return uri, 200
-            r = requests.head(uri, headers=self._headers, timeout=self._timeout)
-            while True:
-                if 'location' in r.headers:
-                    r = requests.head(r.headers['location'])
-                    uri = r.url
-                else:
-                    return r.url, r.status_code
+            try:
+                r = requests.head(uri, headers=self._headers, timeout=self._timeout)
+            except (requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL):
+                return uri, -1
+            else:
+                while True:
+                    if 'location' in r.headers:
+                        r = requests.head(r.headers['location'])
+                        uri = r.url
+                    else:
+                        return r.url, r.status_code
 
         except Exception as e:
             return uri, str(e)
@@ -142,21 +156,19 @@ class UnshortenIt(object):
 
             if len(adlink) > 0:
                 uri = re.sub('^click_url = "|"\;$', '', adlink[0])
-                if re.search(r'http(s|)\://adfoc\.us/serve/skip/\?id\=', uri):
-                    http_header = {
-                        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
-                        "Accept-Encoding": "gzip,deflate,sdch",
-                        "Accept-Language": "en-US,en;,q=0.8",
-                        "Connection": "keep-alive",
-                        "Host": "adfoc.us",
-                        "Cache-Control": "no-cache",
-                        "Pragma": "no-cache",
-                        "Referer": orig_uri,
-                    }
-                    r = requests.get(uri, headers=http_header, timeout=self._timeout)
+                http_header = {
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+                    "Accept-Encoding": "gzip,deflate,sdch",
+                    "Accept-Language": "en-US,en;,q=0.8",
+                    "Connection": "keep-alive",
+                    "Host": "adfoc.us",
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache",
+                    "Referer": orig_uri,
+                }
+                r = requests.get(uri, headers=http_header, timeout=self._timeout)
 
-                    uri = r.url
-                return uri, r.status_code
+                return r.url, r.status_code
             else:
                 return uri, 'No click_url variable found'
         except Exception as e:
@@ -199,15 +211,14 @@ class UnshortenIt(object):
                     "X-Requested-With": "XMLHttpRequest"
                 }
 
-                browser_token = random.randrange(180000000, 194740476, 5)
-
                 time.sleep(5)
 
-                payload = {'sessionId': session_id, 'browserToken': browser_token}
-                r = requests.get('http://sh.st/adSession/callback', params=payload, headers=http_header, timeout=self._timeout)
-
+                payload = {'adSessionId': session_id, 'callback': 'c'}
+                r = requests.get('http://sh.st/shortest-url/end-adsession', params=payload, headers=http_header, timeout=self._timeout)
+                response = r.content[6:-2].decode('utf-8')
+                
                 if r.status_code == 200:
-                    resp_uri = r.json()['destinationUrl']
+                    resp_uri = json.loads(response)['destinationUrl']
                     if resp_uri is not None:
                         uri = resp_uri
                     else:
@@ -217,6 +228,19 @@ class UnshortenIt(object):
 
             return uri, r.status_code
 
+        except Exception as e:
+            return uri, str(e)
+
+    def _unshorten_hrefli(self, uri):
+        try:
+            # Extract url from query
+            parsed_uri = urlparse(uri)
+            extracted_uri = parsed_uri.query
+            if not extracted_uri:
+                return uri, INVALID_URL_ERROR_CODE
+            # Get url status code
+            r = requests.head(extracted_uri, headers=self._headers, timeout=self._timeout)
+            return r.url, r.status_code
         except Exception as e:
             return uri, str(e)
 
