@@ -60,3 +60,13 @@ class TestUnshortenIt(TestCase):
             obtained_result = unshortenit.unshorten(link)
             self.assertEqual(obtained_result, correct_result)
 
+    def test_anonymz(self):
+        test_links = [
+            ('https://anonymz.com/?http://example.com/', ('http://example.com/', 200)),
+            ('https://anonymz.com/?http://stackoverflow.com/', ('http://stackoverflow.com/', 200)),
+        ]
+
+        for link, correct_result in test_links:
+            obtained_result = unshortenit.unshorten(link)
+            self.assertEqual(obtained_result, correct_result)
+

@@ -35,6 +35,8 @@ class UnshortenIt(object):
     _lnxlu_regex = r'lnx\.lu'
     _shst_regex = r'sh\.st'
     _hrefli_regex = r'href\.li'
+    _anonymz_regex = r'anonymz\.com'
+
     _this_dir, _this_filename = os.path.split(__file__)
     _timeout = 10
 
@@ -60,6 +62,8 @@ class UnshortenIt(object):
             return self._unshorten_shst(uri)
         if re.search(self._hrefli_regex, domain, re.IGNORECASE):
             return self._unshorten_hrefli(uri)
+        if re.search(self._anonymz_regex, domain, re.IGNORECASE):
+            return self._unshorten_anonymz(uri)
 
         try:
             # headers stop t.co from working so omit headers if this is a t.co link
@@ -243,6 +247,10 @@ class UnshortenIt(object):
             return r.url, r.status_code
         except Exception as e:
             return uri, str(e)
+
+    def _unshorten_anonymz(self, uri):
+        # For the moment they use the same system as hrefli
+        return self._unshorten_hrefli(uri)
 
 
 def unshorten(uri, type=None, timeout=10):
