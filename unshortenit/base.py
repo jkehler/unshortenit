@@ -14,7 +14,7 @@ from base64 import b64decode
 import copy
 
 HTTP_HEADER = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.46 Safari/535.11",
+    "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36',
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Encoding": "gzip,deflate,sdch",
     "Connection": "keep-alive",
@@ -34,11 +34,6 @@ def find_in_text(regex, text, flags = re.IGNORECASE | re.DOTALL):
 
 class UnshortenIt(object):
 
-    _headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Encoding': 'gzip,deflate,sdch',
-                'Accept-Language': 'en-US,en;q=0.8',
-                'Connection': 'keep-alive',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36'}
     _adfly_regex = r'adf\.ly|q\.gs|j\.gs|u\.bb|ay\.gy'
     _linkbucks_regex = r'linkbucks\.com|any\.gs|cash4links\.co|cash4files\.co|dyo\.gs|filesonthe\.net|goneviral\.com|megaline\.co|miniurls\.co|qqc\.co|seriousdeals\.net|theseblogs\.com|theseforums\.com|tinylinks\.co|tubeviral\.com|ultrafiles\.net|urlbeat\.net|whackyvidz\.com|yyv\.co'
     _adfocus_regex = r'adfoc\.us'
@@ -55,12 +50,12 @@ class UnshortenIt(object):
         domain = urlsplit(uri).netloc
 
         if not domain:
-            return uri, INVALID_URL_ERROR_CODE
+            return uri, r.status_code
 
 
         had_google_outbound, uri = self._clear_google_outbound_proxy(uri)
         if had_google_outbound:
-            return uri, 200
+            return uri, r.status_code
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             return self._unshorten_adfly(uri)
         if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
@@ -76,7 +71,7 @@ class UnshortenIt(object):
         if re.search(self._anonymz_regex, domain, re.IGNORECASE):
             return self._unshorten_anonymz(uri)
 
-        return uri, 200
+        return uri, r.status_code
 
     def unwrap_30x(self, uri, timeout=10):
 
@@ -95,21 +90,22 @@ class UnshortenIt(object):
                 return r.url, r.status_code
             # p.ost.im uses meta http refresh to redirect.
             if domain == 'p.ost.im':
-                r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+                r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
                 uri = re.findall(r'.*url\=(.*?)\"\.*',r.text)[0]
-                return uri, 200
-            try:
-            r = requests.head(uri, headers=self._headers, timeout=self._timeout)
-            except (requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL):
-                return uri, -1
+                return uri, r.status_code
             else:
-            while True:
-                if 'location' in r.headers:
-                    r = requests.head(r.headers['location'])
-                    uri = r.url
-                    loop_counter += 1
-                else:
-                    return r.url, r.status_code
+
+                while True:
+                    try:
+                        r = requests.head(uri, headers=HTTP_HEADER, timeout=self._timeout)
+                    except (requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL):
+                        return uri, -1
+                    if 'location' in r.headers:
+                        r = requests.head(r.headers['location'])
+                        uri = r.url
+                        loop_counter += 1
+                    else:
+                        return r.url, r.status_code
 
 
         except Exception as e:
@@ -147,7 +143,7 @@ class UnshortenIt(object):
     def _unshorten_adfly(self, uri):
 
         try:
-            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+            r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
             html = r.text
             ysmm = re.findall(r"var ysmm =.*\;?", html)
 
@@ -324,14 +320,14 @@ class UnshortenIt(object):
 
     def _unshorten_lnxlu(self, uri):
         try:
-            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+            r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
             html = r.text
 
             code = re.findall('/\?click\=(.*)\."', html)
 
             if len(code) > 0:
                 payload = {'click': code[0]}
-                r = requests.get('http://lnx.lu/', params=payload, headers=self._headers, timeout=self._timeout)
+                r = requests.get('http://lnx.lu/', params=payload, headers=HTTP_HEADER, timeout=self._timeout)
                 return r.url, r.status_code
             else:
                 return uri, 'No click variable found'
@@ -340,7 +336,7 @@ class UnshortenIt(object):
 
     def _unshorten_shst(self, uri):
         try:
-            r = requests.get(uri, headers=self._headers, timeout=self._timeout)
+            r = requests.get(uri, headers=HTTP_HEADER, timeout=self._timeout)
             html = r.text
 
             session_id = re.findall(r'sessionId\:(.*?)\"\,', html)
@@ -380,9 +376,9 @@ class UnshortenIt(object):
             parsed_uri = urlparse(uri)
             extracted_uri = parsed_uri.query
             if not extracted_uri:
-                return uri, INVALID_URL_ERROR_CODE
+                return uri, 200
             # Get url status code
-            r = requests.head(extracted_uri, headers=self._headers, timeout=self._timeout)
+            r = requests.head(extracted_uri, headers=HTTP_HEADER, timeout=self._timeout)
             return r.url, r.status_code
         except Exception as e:
             return uri, str(e)
