@@ -42,6 +42,8 @@ class UnshortenIt(object):
     _hrefli_regex = r'href\.li'
     _anonymz_regex = r'anonymz\.com'
 
+    _maxretries = 5
+
     _this_dir, _this_filename = os.path.split(__file__)
     _timeout = 10
 
@@ -99,10 +101,14 @@ class UnshortenIt(object):
                         r = requests.head(uri, headers=HTTP_HEADER, timeout=self._timeout)
                     except (requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL):
                         return uri, -1
-                    if 'location' in r.headers:
+
+
+                    retries = 0
+                    if 'location' in r.headers and retries < self._maxretries:
                         r = requests.head(r.headers['location'])
                         uri = r.url
                         loop_counter += 1
+                        retries = retries + 1
                     else:
                         return r.url, r.status_code
 
