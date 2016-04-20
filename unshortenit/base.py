@@ -50,12 +50,11 @@ class UnshortenIt(object):
         domain = urlsplit(uri).netloc
 
         if not domain:
-            return uri, r.status_code
+            return uri, "No domain found in URI!"
 
 
         had_google_outbound, uri = self._clear_google_outbound_proxy(uri)
-        if had_google_outbound:
-            return uri, r.status_code
+
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             return self._unshorten_adfly(uri)
         if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
@@ -71,7 +70,7 @@ class UnshortenIt(object):
         if re.search(self._anonymz_regex, domain, re.IGNORECASE):
             return self._unshorten_anonymz(uri)
 
-        return uri, r.status_code
+        return uri, 200
 
     def unwrap_30x(self, uri, timeout=10):
 
@@ -388,9 +387,9 @@ class UnshortenIt(object):
         return self._unshorten_hrefli(uri)
 
 
-def unwrap_30x_only(uri, type=None, timeout=10):
+def unwrap_30x_only(uri, timeout=10):
     unshortener = UnshortenIt()
-    uri, status = unshortener.unshorten(uri, type=type)
+    uri, status = unshortener.unwrap_30x(uri, timeout=timeout)
     return uri, status
 
 def unshorten_only(uri, type=None, timeout=10):
