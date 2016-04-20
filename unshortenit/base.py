@@ -44,6 +44,9 @@ class UnshortenIt(object):
     _adfocus_regex = r'adfoc\.us'
     _lnxlu_regex = r'lnx\.lu'
     _shst_regex = r'sh\.st'
+    _hrefli_regex = r'href\.li'
+    _anonymz_regex = r'anonymz\.com'
+
     _this_dir, _this_filename = os.path.split(__file__)
     _timeout = 10
 
@@ -51,11 +54,13 @@ class UnshortenIt(object):
 
         domain = urlsplit(uri).netloc
 
+        if not domain:
+            return uri, INVALID_URL_ERROR_CODE
+
+
         had_google_outbound, uri = self._clear_google_outbound_proxy(uri)
         if had_google_outbound:
             return uri, 200
-
-
         if re.search(self._adfly_regex, domain, re.IGNORECASE) or type == 'adfly':
             return self._unshorten_adfly(uri)
         if re.search(self._adfocus_regex, domain, re.IGNORECASE) or type =='adfocus':
@@ -66,6 +71,10 @@ class UnshortenIt(object):
             return self._unshorten_lnxlu(uri)
         if re.search(self._shst_regex, domain, re.IGNORECASE):
             return self._unshorten_shst(uri)
+        if re.search(self._hrefli_regex, domain, re.IGNORECASE):
+            return self._unshorten_hrefli(uri)
+        if re.search(self._anonymz_regex, domain, re.IGNORECASE):
+            return self._unshorten_anonymz(uri)
 
         return uri, 200
 
@@ -89,7 +98,11 @@ class UnshortenIt(object):
                 r = requests.get(uri, headers=self._headers, timeout=self._timeout)
                 uri = re.findall(r'.*url\=(.*?)\"\.*',r.text)[0]
                 return uri, 200
+            try:
             r = requests.head(uri, headers=self._headers, timeout=self._timeout)
+            except (requests.exceptions.InvalidSchema, requests.exceptions.InvalidURL):
+                return uri, -1
+            else:
             while True:
                 if 'location' in r.headers:
                     r = requests.head(r.headers['location'])
@@ -341,7 +354,6 @@ class UnshortenIt(object):
                 http_header["Origin"]           = "http://sh.st"
                 http_header["X-Requested-With"] = "XMLHttpRequest"
 
-
                 time.sleep(5)
 
                 payload = {'adSessionId': session_id, 'callback': 'c'}
@@ -361,6 +373,23 @@ class UnshortenIt(object):
 
         except Exception as e:
             return uri, str(e)
+
+    def _unshorten_hrefli(self, uri):
+        try:
+            # Extract url from query
+            parsed_uri = urlparse(uri)
+            extracted_uri = parsed_uri.query
+            if not extracted_uri:
+                return uri, INVALID_URL_ERROR_CODE
+            # Get url status code
+            r = requests.head(extracted_uri, headers=self._headers, timeout=self._timeout)
+            return r.url, r.status_code
+        except Exception as e:
+            return uri, str(e)
+
+    def _unshorten_anonymz(self, uri):
+        # For the moment they use the same system as hrefli
+        return self._unshorten_hrefli(uri)
 
 
 def unwrap_30x_only(uri, type=None, timeout=10):
