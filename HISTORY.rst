@@ -74,7 +74,7 @@ History
 
 * Fixed sh.st support
 
-0.2.4 (2016-05-20)
+0.3.0 (2016-05-20)
 ++++++++++++++++++
 
 * Split out unshortening and unwrapping 301 redirects into separate calls.
