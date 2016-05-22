@@ -73,3 +73,13 @@ History
 ++++++++++++++++++
 
 * Fixed sh.st support
+
+0.2.4 (2016-05-20)
+++++++++++++++++++
+
+* Split out unshortening and unwrapping 301 redirects into separate calls.
+* Added support for unwrapping google proxy links.
+* Some general cleanup in tests, updated some of the test links.
+* Handle anonymz.com links (provided by @guigarfr)
+* Handle href.li links (provided by @guigarfr)
+* Update user-agents (provided by @Dreysman)
