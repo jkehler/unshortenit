@@ -161,8 +161,16 @@ class UnshortenIt(object):
                 for c in [ysmm[i:i+2] for i in range(0, len(ysmm), 2)]:
                     left += c[0]
                     right = c[1] + right
+                
+                # Additional digit arithmetic 
+                encoded_uri = list(left + right)
+                numbers = ((i, n) for i, n in enumerate(encoded_uri) if str.isdigit(n))
+                for first, second in zip(numbers, numbers):
+                    xor = int(first[1]) ^ int(second[1])
+                    if xor < 10:
+                        encoded_uri[first[0]] = str(xor)
 
-                decoded_uri = b64decode(left.encode() + right.encode())[2:].decode()
+                decoded_uri = b64decode("".join(encoded_uri).encode())[16:-16].decode()
 
                 if re.search(r'go\.php\?u\=', decoded_uri):
                     decoded_uri = b64decode(re.sub(r'(.*?)u=', '', decoded_uri)).decode()
