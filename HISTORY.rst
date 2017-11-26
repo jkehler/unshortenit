@@ -83,3 +83,8 @@ History
 * Handle anonymz.com links (provided by @guigarfr)
 * Handle href.li links (provided by @guigarfr)
 * Update user-agents (provided by @Dreysman)
+
+0.3.1 (2017-11-26)
+++++++++++++++++++
+
+* Fixed adf.ly decoding issues (provided by @marlowww)
