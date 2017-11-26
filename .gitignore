@@ -43,4 +43,4 @@ output/*/index.html
 docs/_build
 
 # Virtual env
-env
+.env
