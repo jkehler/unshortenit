@@ -1,42 +1,32 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from setuptools import setup, find_packages
 
-import os
-import sys
-import unshortenit
-
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    sys.exit()
 
 readme = open('README.md').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
+
 setup(
     name='unshortenit',
-    version=unshortenit.__version__,
+    version='0.4.0',
     description='Unshortens adf.ly, sh.st, and any 301 redirected shortener urls',
     long_description=readme + '\n\n' + history,
     author='Jeff Kehler',
     author_email='jeffrey.kehler@gmail.com',
-    url='https://github.com/DevKeh/unshortenit',
-    packages=[
-        'unshortenit',
-    ],
-    package_dir={'unshortenit': 'unshortenit'},
+    url='https://github.com/jkehler/unshortenit',
+    packages=find_packages(),
     include_package_data=True,
-    install_requires=['requests'
+    install_requires=[
+        'requests',
+        'click'
     ],
     license="MIT",
-    zip_safe=False,
     keywords='unshortener adf.ly lnx.lu sh.st shortener',
+    entry_points='''
+    [console_scripts]
+    unshortenit=unshortenit.cli:cli
+    ''',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
