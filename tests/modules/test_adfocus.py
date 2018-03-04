@@ -1,11 +1,13 @@
 import pytest
+
 from unshortenit.exceptions import NotFound, UnshortenFailed
+from unshortenit.unshortenit import DEFAULT_HEADERS
 
 
 @pytest.fixture
 def adfocus():
     from unshortenit.modules import AdFocus
-    return AdFocus()
+    return AdFocus(headers=DEFAULT_HEADERS)
 
 
 def test_adfocus_valid_link(adfocus):

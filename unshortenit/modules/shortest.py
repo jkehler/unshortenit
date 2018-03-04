@@ -26,7 +26,7 @@ class ShorteSt(UnshortenModule):
         if len(session_id) > 0:
             session_id = re.sub(r'\s\"', '', session_id[0])
 
-            http_header = copy.copy(self.headers)
+            http_header = copy.copy(self.headers or {})
             http_header["Content-Type"] = "application/x-www-form-urlencoded"
             http_header["Host"] = "sh.st"
             http_header["Referer"] = uri

@@ -5,25 +5,14 @@ from urllib.parse import urlsplit
 from unshortenit.exceptions import NotFound
 
 
-DEFAULT_HEADERS = {
-    "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36',  # noqa
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Encoding": "gzip,deflate,sdch",
-    "Connection": "keep-alive",
-    "Accept-Language": "nl-NL,nl;q=0.8,en-US;q=0.6,en;q=0.4",
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache"
-}
-
-
 class UnshortenModule:
 
     name = None
     domains = set()
     _domain_regex = None
 
-    def __init__(self, headers: dict = None, timeout: int = None):
-        self.headers = headers or DEFAULT_HEADERS
+    def __init__(self, headers: dict = None, timeout: int = 30):
+        self.headers = headers
         self.timeout = timeout
         self._build_domain_regex()
 

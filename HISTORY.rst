@@ -3,6 +3,15 @@
 History
 -------
 
+0.4.0 (2018-03-04)
+++++++++++++++++++
+
+* BREAKING CHANGES - API has changed.
+  Major refactoring of entire code-base.
+* Added support for adding additional domains at runtime
+* Added support to create your own modules and add them at runtime
+* Included a command line interface to unshorten links via CLI
+
 0.3.1 (2017-11-26)
 ++++++++++++++++++
 
