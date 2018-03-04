@@ -26,7 +26,6 @@ class Unshortener:
 
     def unshorten(self, uri: str, module: str = None, timeout: int = 30,
                   unshorten_nested: bool = False) -> str:
-    
         if module and module in self.modules:
             return self.modules[module].unshorten(uri)
 
