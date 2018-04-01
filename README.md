@@ -1,20 +1,18 @@
-===============================
 unshortenit
-===============================
+===========
 
-Unshortens ad-based urls and 301 redirects. Supports adf.ly, lnx.lu, and sh.st.
-
-* Linkbucks.com and adfoc.us support temporarly removed.
+Unshortens ad-based urls and 301 redirects. Supports adf.ly, adfoc.us, and sh.st.
 
 Features
 --------
 
 - Supports unshortening the following ad-based shortners:
 	- Adf.ly and related subdomains
-	- Custom adf.ly domains by passing the type='adfly' parameter
+	- Custom adf.ly domains by passing the module='adfly' parameter
 	- Sh.st
+	- Adfoc.us
 - Supports any 301 redirected urls
-- Python 2.7, 3.3, and 3.4 support
+- Python 3 support only
 
 Usage
 -----
@@ -32,16 +30,6 @@ Usage
 	# (you cannot tell if a redirect is present without making a request).
 	unshortened_uri, status = unshortenit.unwrap_30x_only('http://ul.to')
 
-	# Unshorten any ad content, and unwrap any HTTP 30x redirects (if present).
-	# Internally, this basically calls unshorten_only(), and then unwrap_30x_only()
-	# sequentially on the passed URL, returning early if the unshorten_only()
-	# call returned an error.
-	unshortened_uri, status = unshortenit.unshorten('http://ul.to')
-
-> All calls will return a tuple (unshortened_uri, status)
-
-> unshortened_uri will contain the unshortened uri. If you pass in a non-shortener url it will return the original url.
-> status will contain the status code or any error messages
 
 Installation
 ------------

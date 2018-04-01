@@ -1,11 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from .__version__ import (          # noqa
+    __title__,
+    __description__,
+    __url__,
+    __version__,
+    __author__,
+    __author_email__,
+    __license__,
+    __copyright__
+)
 
-__author__ = 'Jeff Kehler'
-__email__ = 'jeffrey.kehler@gmail.com'
-__version__ = '0.3.1'
-
-from .base import unwrap_30x_only
-from .base import unshorten_only
-from .base import unshorten
-
+from .unshortenit import UnshortenIt    # noqa

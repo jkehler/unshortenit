@@ -1,0 +1,139 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Quickstart &#8212; unshortenit  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to unshortenit’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>This package is available via the PIP repository. To install this package simply run this commmand:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install unshortenit
+</pre></div>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Using this library is very simple:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">unshortenit</span> <span class="k">import</span> <span class="n">UnshortenIt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unshortener</span> <span class="o">=</span> <span class="n">UnshortenIt</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">uri</span> <span class="o">=</span> <span class="n">unshortener</span><span class="o">.</span><span class="n">unshorten</span><span class="p">(</span><span class="s1">&#39;https://href.li/?https://example.com&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+<span class="go">https://example.com</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this headline">¶</a></h2>
+<p>You can override the default timeout value and default headers globally for all modules via the UnshortenIt initializer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">unshortenit</span> <span class="k">import</span> <span class="n">UnshortenIt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">unshortener</span> <span class="o">=</span> <span class="n">UnshortenIt</span><span class="p">(</span><span class="n">default_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">default_headers</span><span class="o">=</span><span class="nb">dict</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>By default the library will not make any HTTP request if the url provided does not match any of the modules url patterns.
+To override this you may pass <code class="docutils literal notranslate"><span class="pre">force=True</span></code> to the <code class="docutils literal notranslate"><span class="pre">unshorten</span></code> method.</p>
+<p>If you wish to force a specific module to be used for a link you may do so by using the <code class="docutils literal notranslate"><span class="pre">module='module_name'</span></code> parameter on the <code class="docutils literal notranslate"><span class="pre">unshorten</span></code> method.
+This is useful for ad-based shorteners that allow people to use custom domains or if you know a link is a meta refresh type.</p>
+<p>In some cases you may come across shorteners that are nested one after another. By default the library will not check if the returned link is also another shortener link.
+If you wish to force it to always check the returned link as well you may pass <code class="docutils literal notranslate"><span class="pre">unshorten_nested=True</span></code> to the <code class="docutils literal notranslate"><span class="pre">unshorten</span></code> method.</p>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<p>Exceptions will not be handled by the module and will be passed up to the caller. You will need to wrap the unshorten call in your own try, except blocks.</p>
+<p>This module includes 2 custom Exceptions <code class="docutils literal notranslate"><span class="pre">unshortenit.exceptions.NotFound</span></code> and <code class="docutils literal notranslate"><span class="pre">unshortenit.exceptions.UnshortenFailed</span></code>.
+The first will be triggered if the url returns a 404 status code. The later will occur if some sort of issue happened during the unshortening process.
+All other exceptions will be the default python requests library exceptions.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Quickstart</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#advanced-usage">Advanced Usage</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to unshortenit’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/quickstart.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jeff Kehler.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/quickstart.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
