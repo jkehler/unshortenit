@@ -11,7 +11,7 @@ from unshortenit.exceptions import UnshortenFailed
 class ShorteSt(UnshortenModule):
 
     name = 'shortest'
-    domains = ['sh.st']
+    domains = ['sh.st', 'festyy.com', 'ceesty.com']
 
     def __init__(self, headers: dict = None, timeout: int = 30):
         super().__init__(headers, timeout)

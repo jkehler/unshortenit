@@ -13,7 +13,10 @@ class AdfLy(UnshortenModule):
         'j.gs',
         'q.gs',
         'u.bb',
-        'ay.gy'
+        'ay.gy',
+        'atominik.com',
+        'tinyium.com',
+        'microify.com'
     ])
 
     def __init__(self, headers: dict = None, timeout: int = 30):
