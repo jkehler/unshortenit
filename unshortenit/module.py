@@ -16,7 +16,7 @@ class UnshortenModule:
         self.timeout = timeout
         self._build_domain_regex()
 
-    def unshorten(self, uri: str, timeout: int = 30) -> str:
+    def unshorten(self, uri: str, timeout: int = None) -> str:
         raise NotImplementedError
 
     def _build_domain_regex(self):
