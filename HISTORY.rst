@@ -3,7 +3,7 @@
 History
 -------
 
-0.4.0 (2018-03-04)
+0.4.0 (2018-04-01)
 ++++++++++++++++++
 
 * BREAKING CHANGES - API has changed.
